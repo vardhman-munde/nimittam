@@ -20,7 +20,7 @@ This is a web-based chatbot application built with Streamlit that allows users t
 - Python 3.8+
 - Streamlit
 - Ollama (running locally)
-
+- 
 ## Installation
 
 1. Install the required dependencies:
@@ -31,9 +31,10 @@ pip install streamlit ollama
 ```
 
 2. Make sure Ollama is installed and running locally with the gemma3:4b model:
-
+   Open Cammand Prompt as Administration and Run This Command One by One 
 ```
 bash
+irm https://ollama.com/install.ps1 | iex
 ollama serve
 ollama pull gemma3:4b
 ```
