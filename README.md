@@ -31,6 +31,7 @@ pip install streamlit ollama
 ```
 
 2. Make sure Ollama is installed and running locally with the gemma3:4b model:
+ 
    Open Cammand Prompt as Administration and Run This Command One by One 
 ```
 bash
