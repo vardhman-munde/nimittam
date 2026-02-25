@@ -5,7 +5,7 @@ import os
 st.set_page_config(page_title="AI Chatbot", page_icon="💬", layout="centered")
 if "messages" not in st.session_state:
     st.session_state.messages = []
-st.title("💬 AI Chatbot")
+st.title("Nimittam  Chatbot")
 st.markdown("---")
 with st.sidebar:
     st.header("⚙️ Settings")  
