@@ -1,90 +1,48 @@
-# AI Chatbot
-
-A Streamlit-based AI chatbot application that connects to a local AI model using Ollama.
+# Nimittam AI Chatbot
 
 ## Overview
+Nimittam AI is a multimodal chatbot application built with Flet (Flutter for Python). It integrates Ollama for local AI inference with the Gemma 4 model (`gemma4:e4b`), Whisper (`base` model) for potential audio processing, and PIL for image handling. The app features a dark-themed chat UI (450x800 window) with message input, image picker (via file picker), and real-time responses.
 
-This is a web-based chatbot application built with Streamlit that allows users to interact with a local AI model. The application provides a clean, intuitive chat interface with message history, timestamps, and chat statistics.
-
-## Features
-
-- 💬 **Chat Interface**: Clean and modern chat UI with message bubbles
-- 🤖 **Local AI**: Connects to local Ollama AI model (gemma3:4b)
-- 📊 **Chat Statistics**: Track total messages and user messages in sidebar
-- 🕐 **Timestamps**: View when each message was sent
-- 🗑️ **Clear Chat**: Button to reset conversation history
-- ⏳ **Thinking Indicator**: Shows spinner while AI is generating response
+## Files
+- `app.py`: Main Flet application containing the complete UI and backend logic.
 
 ## Requirements
+- Python 3.x
+- Dependencies (install via pip):
+  ```
+  pip install flet ollama openai-whisper pillow
+  pip install streamlit
+  ```
 
-- Python 3.8+
-- Streamlit
-- Ollama (running locally)
-- 
-## Installation
+**Setup Ollama:**
+1. Download and install from [ollama.com](https://ollama.com)
+2. Start the server: `ollama serve`
+3. Pull the model: `ollama pull gemma4:e4b`
 
-1. Install the required dependencies:
+**Note:** Whisper model (`base`) loads automatically on first use.
 
-```
-bash
-pip install streamlit ollama
-```
-
-2. Make sure Ollama is installed and running locally with the gemma3:4b model:
- 
-   Open Cammand Prompt as Administration and Run This Command One by One 
-```
-bash
-irm https://ollama.com/install.ps1 | iex
-ollama serve
-ollama pull gemma3:4b
-```
+## Getting Started
+1. Install requirements and set up Ollama (see above).
+2. Navigate to the project directory.
+3. Run the application:
+   ```
+   streamlit run app.py
+   ```
+   This launches a standalone desktop window.
 
 ## Usage
+- Type messages in the input field (submit with Enter or Send button).
+- Attach images using the image icon (supports multimodal queries).
+- Bot responses appear in green-bordered containers.
+- Supports local processing – no internet required after setup.
 
-Run the Streamlit application:
+## Features
+- Image upload support
+- Ollama-powered chat
+- Auto-scrolling chat history
 
-```
-bash
-streamlit run app.py
-```
-
-The app will open in your default browser at `http://localhost:8501`.
-
-## Configuration
-
-- **Model**: gemma3:4b (configured in the sidebar and code)
-- **Ollama Host**: http://127.0.0.1:11434 (default local Ollama port)
-
-## How It Works
-
-1. **Message Input**: Type your message in the chat input box at the bottom
-2. **API Call**: The message is sent to the local Ollama API
-3. **Response**: The AI generates a response and displays it in the chat
-4. **History**: All messages are stored in session state for conversation continuity
-
-## File Structure
-
-```
-.
-├── app.py          # Main Streamlit application
-└── README.md       # This file
-```
-
-## Dependencies
-
-| Package | Purpose |
-|---------|---------|
-| streamlit | Web UI framework |
-| ollama | Python client for Ollama API |
-| datetime | Timestamp handling |
-
-## Troubleshooting
-
-- **Connection Error**: Ensure Ollama is running (`ollama serve`)
-- **Model Not Found**: Pull the model first (`ollama pull gemma3:4b`)
-- **Port Already in Use**: Check if port 8501 is available for Streamlit
+## Contributing
+Feel free to fork, improve, and submit pull requests.
 
 ## License
-
-MIT License
+This project is open source and provided as-is.
