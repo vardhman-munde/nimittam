@@ -1,62 +1,102 @@
-import streamlit as st
-from datetime import datetime
-from ollama import Client 
+import flet as ft
+from ollama import Client
+import whisper
 import os
-st.set_page_config(page_title="AI Chatbot", page_icon="💬", layout="centered")
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-st.title("Nimittam  Chatbot")
-st.markdown("---")
-with st.sidebar:
-    st.header("⚙️ Settings")  
-    st.markdown("**Model: gemma3:4b**")
-    if st.button("🗑️ Clear Chat", use_container_width=True):
-        st.session_state.messages = []
-        st.rerun()
-    st.markdown("---")
-    st.markdown("**Chat Statistics:**")
-    st.markdown(f"Total Messages: {len(st.session_state.messages)}")
-    user_count = sum(1 for m in st.session_state.messages if m["role"] == "user")
-    st.markdown(f"User Messages: {user_count}")
-def get_ollama_response(model="gemma3:4b"):
-    try:
-        client = Client(host='http://127.0.0.1:11434') 
-        api_messages = []
-        for msg in st.session_state.messages:
-            api_messages.append({
-                "role": msg["role"],
-                "content": msg["content"]
-            })
-        response = client.chat(
-            model=model,
-            messages=api_messages
+import tempfile
+from PIL import Image
+
+def main(page: ft.Page):
+    # --- UI CONFIG ---
+    page.title = "Nimittam AI"
+    page.theme_mode = ft.ThemeMode.DARK
+    page.window_width = 450
+    page.window_height = 800
+    page.padding = 20
+    
+    # Initialize Ollama & Whisper
+    client = Client(host='http://127.0.0.1:11434')
+    whisper_model = whisper.load_model("base") # Loads locally
+
+    chat_history = ft.ListView(expand=True, spacing=10, auto_scroll=True)
+    model_name = "gemma4:e4b"
+    selected_image_path = None
+
+    # --- FUNCTIONS ---
+    def on_file_result(e: ft.FilePickerResultEvent):
+        nonlocal selected_image_path
+        if e.files:
+            selected_image_path = e.files[0].path
+            page.snack_bar = ft.SnackBar(ft.Text(f"Image selected: {e.files[0].name}"))
+            page.snack_bar.open = True
+            page.update()
+
+    file_picker = ft.FilePicker(on_result=on_file_result)
+    page.overlay.append(file_picker)
+
+    def send_message(e):
+        nonlocal selected_image_path
+        user_text = message_input.value
+        if not user_text and not selected_image_path:
+            return
+
+        # Add User Message to UI
+        chat_history.controls.append(
+            ft.Container(
+                content=ft.Text(user_text, color=ft.Colors.WHITE),
+                alignment=ft.alignment.center_right,
+                bgcolor=ft.Colors.BLUE_GREY_900,
+                padding=10,
+                border_radius=10,
+            )
         )
-        return response['message']['content']
-    except Exception as e:
-        return f"Error connecting to local AI: {str(e)}"
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-        if "timestamp" in message:
-            st.caption(f"🕐 {message['timestamp']}")
-if prompt := st.chat_input("Type your message here..."):  
-    timestamp = datetime.now().strftime("%H:%M")
-    with st.chat_message("user"):
-        st.markdown(prompt)
-        st.caption(f"🕐 {timestamp}")
-    st.session_state.messages.append({
-        "role": "user", 
-        "content": prompt,
-        "timestamp": timestamp
-    })
-    with st.spinner("🤔 Thinking..."):  
-        response = get_ollama_response(model="gemma3:4b")
-    timestamp = datetime.now().strftime("%H:%M")   
-    with st.chat_message("assistant"):
-        st.markdown(response)
-        st.caption(f"🕐 {timestamp}")
-    st.session_state.messages.append({
-        "role": "assistant", 
-        "content": response,
-        "timestamp": timestamp
-    })
+        
+        message_input.value = ""
+        page.update()
+
+        # Call Ollama
+        try:
+            msg_payload = {"role": "user", "content": user_text}
+            if selected_image_path:
+                msg_payload["images"] = [selected_image_path]
+
+            response = client.chat(model=model_name, messages=[msg_payload])
+            bot_res = response['message']['content']
+
+            chat_history.controls.append(
+                ft.Container(
+                    content=ft.Text(bot_res, color=ft.Colors.GREEN_200),
+                    alignment=ft.alignment.center_left,
+                    bgcolor=ft.Colors.BLACK,
+                    padding=10,
+                    border_radius=10,
+                    border=ft.border.all(1, ft.Colors.GREEN_900)
+                )
+            )
+            selected_image_path = None # Reset image
+        except Exception as ex:
+            chat_history.controls.append(ft.Text(f"Error: {ex}", color="red"))
+        
+        page.update()
+
+    # --- UI LAYOUT ---
+    message_input = ft.TextField(
+        hint_text="Type your message...",
+        expand=True,
+        border_color=ft.Colors.GREEN_700,
+        on_submit=send_message
+    )
+
+    page.add(
+        ft.Text("Nimittam Chatbot", size=30, weight="bold", color=ft.Colors.GREEN_accent),
+        ft.Divider(),
+        chat_history,
+        ft.Row(
+            [
+                ft.IconButton(ft.Icons.IMAGE, on_click=lambda _: file_picker.pick_files()),
+                message_input,
+                ft.FloatingActionButton(icon=ft.Icons.SEND, on_click=send_message, bgcolor=ft.Colors.GREEN_700),
+            ]
+        )
+    )
+
+ft.app(target=main)
